@@ -1,0 +1,89 @@
+name: Build PFV APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Pillow
+        run: pip install Pillow
+
+      - name: Generate Ψ icon
+        run: |
+          python3 - <<'EOF'
+          from PIL import Image, ImageDraw, ImageFont
+
+          sizes = [48, 72, 96, 144, 192]
+          for s in sizes:
+              img = Image.new('RGBA', (s, s), (13, 27, 42, 255))
+              draw = ImageDraw.Draw(img)
+              try:
+                  font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", int(s*0.6))
+              except:
+                  font = ImageFont.load_default()
+              text = "Ψ"
+              bbox = draw.textbbox((0,0), text, font=font)
+              w, h = bbox[2]-bbox[0], bbox[3]-bbox[1]
+              draw.text(((s-w)/2 - bbox[0], (s-h)/2 - bbox[1]), text, font=font, fill=(255,255,255,255))
+              img.save(f"icon_{s}.png")
+          EOF
+
+      - name: Set up Node (Cordova)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Create Cordova project
+        run: |
+          cordova create app com.anglemort.pfv "Psy France Vigilance"
+          cp psy-france-vigilance.html app/www/index.html
+          cd app
+          cordova platform add android
+
+      - name: Copy icons
+        run: |
+          mkdir -p app/res/icon/android
+          cp ../icon_48.png app/res/icon/android/ldpi.png
+          cp ../icon_72.png app/res/icon/android/mdpi.png
+          cp ../icon_96.png app/res/icon/android/hdpi.png
+          cp ../icon_144.png app/res/icon/android/xhdpi.png
+          cp ../icon_192.png app/res/icon/android/xxhdpi.png
+
+      - name: Add permissions (geolocation)
+        run: |
+          echo '<config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+          </config-file>' >> app/config.xml
+
+      - name: Build APK
+        run: |
+          cd app
+          cordova build android
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: psy-france-vigilance-apk
+          path: app/platforms/android/app/build/outputs/apk/debug/*.apk
