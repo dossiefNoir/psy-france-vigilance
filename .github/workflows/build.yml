@@ -37,7 +37,11 @@ jobs:
         run: |
           cd app
           cordova build android --release
-      
+          - name: Copy APK to releases
+        run: |
+          mkdir -p releases
+          find app/platforms/android -name "*.apk" -type f -exec cp {} releases/ \;
+          ls -la releases/
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
