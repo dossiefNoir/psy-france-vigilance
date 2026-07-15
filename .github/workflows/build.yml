@@ -61,15 +61,14 @@ jobs:
           cd app
           cordova platform add android
 
-      - name: Copy icons
+- name: Copy icons
         run: |
           mkdir -p app/res/icon/android
-          cp ../icon_48.png app/res/icon/android/ldpi.png
-          cp ../icon_72.png app/res/icon/android/mdpi.png
-          cp ../icon_96.png app/res/icon/android/hdpi.png
-          cp ../icon_144.png app/res/icon/android/xhdpi.png
-          cp ../icon_192.png app/res/icon/android/xxhdpi.png
-
+          cp icon_48.png app/res/icon/android/ldpi.png
+          cp icon_72.png app/res/icon/android/mdpi.png
+          cp icon_96.png app/res/icon/android/hdpi.png
+          cp icon_144.png app/res/icon/android/xhdpi.png
+          cp icon_192.png app/res/icon/android/xxhdpi.png
       - name: Add permissions (geolocation)
         run: |
           echo '<config-file target="AndroidManifest.xml" parent="/manifest">
