@@ -60,7 +60,6 @@ jobs:
           cp psy-france-vigilance.html app/www/index.html
           cd app
           cordova platform add android
-
 - name: Copy icons
         run: |
           mkdir -p app/res/icon/android
