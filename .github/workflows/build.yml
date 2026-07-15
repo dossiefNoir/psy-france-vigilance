@@ -33,11 +33,12 @@ jobs:
           cd app
           cordova platform add android@latest
       
-      - name: Build APK
+      -- name: Build APK
         run: |
           cd app
           cordova build android --release
-          - name: Copy APK to releases
+
+      - - name: Copy APK to releases
         run: |
           mkdir -p releases
           find app/platforms/android -name "*.apk" -type f -exec cp {} releases/ \;
