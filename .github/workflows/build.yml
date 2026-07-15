@@ -1,50 +1,21 @@
 name: Build PFV APK
-
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-   steps:
+    steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-      
-      - name: Install Cordova
-        run: npm install -g cordova
-      
-      - name: Create Cordova Project
-        run: |
-          cordova create app com.anglemort.pfv PFV
-          cp psy-france-vigilance.html app/www/index.html
-          cd app
-          cordova platform add android@latest
-      
-      -- name: Build APK
-        run: |
-          cd app
-          cordova build android --release
-
-      - - name: Copy APK to releases
-        run: |
-          mkdir -p releases
-          find app/platforms/android -name "*.apk" -type f -exec cp {} releases/ \;
-          ls -la releases/
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - run: npm install -g cordova
+      - run: cordova create app com.anglemort.pfv PFV
+      - run: cp psy-france-vigilance.html app/www/index.html
+      - run: cd app && cordova platform add android
+      - run: cd app && cordova build android
+      - uses: actions/upload-artifact@v4
         with:
-          name: psy-france-vigilance.apk
-          path: app/platforms/android/app/build/outputs/apk/release/*.apk
+          name: PFV-APK
+          path: app/platforms/android/app/build/outputs/apk/debug/
